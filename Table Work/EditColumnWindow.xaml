@@ -1,0 +1,19 @@
+﻿<Window x:Class="StationManager.EditColumnWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StationManager"
+        mc:Ignorable="d"
+        Title="Изменение значений столбцов" Height="450" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <local:EditColumn x:Name="afEdit" Grid.Column="0" HeaderText="Принадлежности" TableName="Affiliations" Margin="5, 5, 3, 5"/>
+        <local:EditColumn x:Name="typeEdit" Grid.Column="1" HeaderText="Типы" TableName="Types" Margin="0, 5, 3, 5"/>
+        <local:EditColumn x:Name="roleEdit" Grid.Column="2" HeaderText="Предназначение" TableName="Roles" Margin="0, 5, 3, 5"/>
+    </Grid>
+</Window>

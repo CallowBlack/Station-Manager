@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Table Work", "Table Work\Table Work.csproj", "{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Debug|x64.ActiveCfg = Debug|x64
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Debug|x64.Build.0 = Debug|x64
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Release|x64.ActiveCfg = Release|x64
+		{9E3807B0-3C8C-42B1-A6A5-68790CB84DD3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2D68980F-05BF-42EF-99BE-B3196CF31717}
+	EndGlobalSection
+EndGlobal
