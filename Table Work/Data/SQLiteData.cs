@@ -201,9 +201,9 @@ namespace StationManager.Data
                 DeleteStations(e.OldItems);
         }
 
-        public void BindStations(IEnumerable<Station> stations)
+        public void BindStations(IEnumerable stations)
         {
-            foreach(var station in stations)
+            foreach(Station station in stations)
                 BindStation(station);
         }
 
@@ -214,9 +214,9 @@ namespace StationManager.Data
             station.CollectionItemAdded += OnStationParameterAdded;
         }
 
-        public void UnbindStations(IEnumerable<Station> stations)
+        public void UnbindStations(IEnumerable stations)
         {
-            foreach (var station in stations)
+            foreach (Station station in stations)
                 UnbindStation(station);
         }
 
@@ -227,17 +227,23 @@ namespace StationManager.Data
             station.CollectionItemAdded -= OnStationParameterAdded;
         }
 
-        public void DeleteStations(System.Collections.IList stations)
+        public void DeleteStations(IList stations)
         {
-            foreach (var station in stations)
-                DeleteStation((Station)station);
-        }
+            UnbindStations(stations);
+            var ids = new int[stations.Count];
+            for(int i = 0; i < stations.Count; i++)
+            {
+                ids[i] = ((Station)stations[i]).id;
+            }
 
-        public void DeleteStation(Station station)
-        {
-            Console.WriteLine($"Deleting station with id {station.id}");
-            UnbindStation(station);
-            connection.Execute("DELETE FROM Stations WHERE id=" + station.id);
+            var startIndex = 0;
+            while (startIndex < ids.Length) {
+                int length = startIndex + 900 <= ids.Length ? 900 : ids.Length - startIndex;
+                int[] tempIds = new int[length];
+                Array.Copy(ids, startIndex, tempIds, 0, length);
+                connection.Execute("DELETE FROM Stations WHERE id IN @ids", new {ids = tempIds});
+                startIndex += 900;
+            }
         }
 
         public void AddStation(Station station)
