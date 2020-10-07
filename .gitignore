@@ -1,5 +1,5 @@
 /.vs/
 /packages/
-Table Work/bin/
-Table Work/obj/
+StationManager/bin/
+StationManager/obj/
 *.db
