@@ -2,3 +2,4 @@
 /packages/
 Table Work/bin/
 Table Work/obj/
+*.db
