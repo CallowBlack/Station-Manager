@@ -108,16 +108,32 @@ namespace StationManager.Data
             return collection;
         }
 
-        private static string[] equals = new string[10] { "Name", "Note", "AffiliationsOfStations", "CarrierFrequenciesOfStation", "ImpulseDurationsOfStation", "ImpulseRepeatFrequenciesOfStation", "PeriodsOfStation", "RangesOfStation", "RolesOfStations", "TypesOfStation"};
+        /* Importing stations to origin database. */
+        public void ImportStations(SQLiteData origin, IEnumerable stations) {
 
-        public void GetNotEqual(bool[] conditions) {
-            if (conditions.Length < 10)
-                return;
+            if (!IsConnected)
+                throw new SqliteException("Sqlite database is not connected.", 1);
+
+            foreach (Station station in stations)
+                UpdateStationImage(station);
             
+            if (!origin.IsConnected)
+                origin.connection.Open();
+
+            foreach (Station station in stations)  
+                origin.AddStation(station);
+                
         }
 
-        public void CopyStations(List<int> stations) { 
-            
+        public IEnumerable<Station> FindUnlikeStations(IEnumerable stations) {
+            var unlikeStations = new List<Station>();
+            foreach (Station station in stations)
+            {
+                var result = connection.QueryFirst("SELECT COUNT(id) as count FROM Stations WHERE name = @name AND note = @note", new { name = station.Name, note = station.Note });
+                if (result.count == 0)
+                    unlikeStations.Add(station);
+            }
+            return unlikeStations;
         }
 
         public ObservableCollection<Station> GetStation(Dictionary<string, IEnumerable<string>> conditions, bool allOccurences = true)

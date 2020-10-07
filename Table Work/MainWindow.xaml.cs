@@ -54,13 +54,16 @@ namespace StationManager
 
         private static bool AllOccurencesQueue = true;
 
-        private static Dictionary<string, IEnumerable<string>> conditionsQueue = null;
+        private Dictionary<string, IEnumerable<string>> currentConditions = null;
 
-        private static Thread searchThread;
+        private Thread searchThread;
 
         private string PathToDataBase;
 
         public bool Additional = false;
+
+        private SQLiteData originDB;
+        private SQLiteData additionalDB;
 
         //
 
@@ -81,10 +84,14 @@ namespace StationManager
 
                     Thread th = new Thread(() =>
                     {
-                        sqlData = new SQLiteData(PathToDataBase);
-                        sqlData.connection.Open();
-                       
-                        Dispatcher.Invoke(new updateConnectionStatusCallback(this.UpdateConnectionStatus), new object[] { sqlData.IsConnected });
+                        var dataBase = new SQLiteData(PathToDataBase);
+                        dataBase.connection.Open();
+
+                        if (Additional)
+                            additionalDB = dataBase;
+                        else
+                            sqlData = dataBase;
+                        Dispatcher.Invoke(new updateConnectionStatusCallback(this.UpdateConnectionStatus), new object[] { dataBase.IsConnected });
 
                     });
                     th.Start();
@@ -96,11 +103,19 @@ namespace StationManager
             }
         }
 
-        public MainWindow(bool additional, string path) {
-            this.Additional = additional;
-            this.PathToDataBase = path;
+        public MainWindow(bool additional, string path, SQLiteData origin) {
             
             InitializeComponent();
+
+            if (additional)
+            {
+                BottomButtons.Visibility = Visibility.Collapsed;
+                CopyButtons.Visibility = Visibility.Visible;
+                originDB = origin;
+            }
+
+            Additional = additional;
+            this.PathToDataBase = path;
 
             if (nameTablesIDs.Count == 0)
             {
@@ -124,7 +139,7 @@ namespace StationManager
             Closing += (s, e) => searchThread.Abort();
         }
 
-        public MainWindow() : this(false, "stations.db") { }
+        public MainWindow() : this(false, "stations.db", default) { }
 
         private void UpdateConnectionStatus(bool isConnected)
         {
@@ -135,7 +150,7 @@ namespace StationManager
                 ConnectionStatus.Text = "Подключено";
                 ConnectionStatus.Foreground = new SolidColorBrush(Colors.DarkGreen);
 
-                UpdateAllNameTables();
+                UpdateAllNameTables(Additional ? additionalDB : sqlData);
                 UpdateMainDataGrid();
             }
             else
@@ -152,11 +167,11 @@ namespace StationManager
             }
         }
 
-        public void UpdateAllNameTables()
+        public void UpdateAllNameTables(SQLiteData dataBase)
         {
             foreach (var name in nameTablesIDs.Keys)
             {
-                var nameTable = sqlData.GetNameDictionary(name.ToString());
+                var nameTable = dataBase.GetNameDictionary(name.ToString());
                 nameTables[name] = nameTable;
 
                 var nameTableIDs = (BiDictionary<int, int>)nameTablesIDs[name];
@@ -186,7 +201,7 @@ namespace StationManager
 
             BindingOperations.ClearBinding(DBGrid, DataGrid.ItemsSourceProperty);
 
-            conditionsQueue = GetConditions();
+            currentConditions = GetConditions();
             AllOccurencesQueue = ConditionOperator.SelectedIndex == 0;
 
             searchMutex.ReleaseMutex();
@@ -200,21 +215,22 @@ namespace StationManager
 
                 searchMutex.WaitOne();
 
-                if (conditionsQueue != null && sqlData != null)
+                if (currentConditions != null && sqlData != null)
                 {
-                    var conditions = conditionsQueue;
-                    conditionsQueue = null;
+                    var conditions = currentConditions;
+                    currentConditions = null;
                     searchMutex.ReleaseMutex();
                     ObservableCollection<Station> result;
 
+                    var dataBase = Additional ? additionalDB : sqlData;
                     if (conditions.Count == 0)
-                        result = sqlData.GetAllStations();
+                        result = dataBase.GetAllStations();
                     else
-                        result = sqlData.GetStation(conditions, AllOccurencesQueue);
+                        result = dataBase.GetStation(conditions, AllOccurencesQueue);
 
                     searchMutex.WaitOne();
-                    if (conditionsQueue == null)
-                        Dispatcher.BeginInvoke(new UpdateMainGridDelegate(UpdateMainGridBinding), new object[] { result });
+                    if (currentConditions == null)
+                        Dispatcher.BeginInvoke(new UpdateMainGridDelegate(UpdateMainGridBinding), new object[] { result , dataBase });
                     else
                         Console.WriteLine("Запрос отменён!");
                     searchMutex.ReleaseMutex();
@@ -224,13 +240,13 @@ namespace StationManager
             }
         }
 
-        private delegate void UpdateMainGridDelegate(ObservableCollection<Station> stations); 
+        private delegate void UpdateMainGridDelegate(ObservableCollection<Station> stations, SQLiteData dataBase); 
 
-        private void UpdateMainGridBinding(ObservableCollection<Station> stations)
+        private void UpdateMainGridBinding(ObservableCollection<Station> stations, SQLiteData dataBase)
         {
             Binding b = new Binding();
             if (!Additional)
-                sqlData.BindStations(stations);
+                dataBase.BindStations(stations);
             b.Source = stations;
             b.Mode = BindingMode.OneWay;
             b.IsAsync = true;
@@ -388,7 +404,7 @@ namespace StationManager
             selfpf.ShowDialog();
             var columnsWindow = new EditColumnWindow();
             columnsWindow.ShowDialog();
-            UpdateAllNameTables();
+            UpdateAllNameTables(Additional ? additionalDB : sqlData);
             UpdateMainDataGrid();
         }
 
@@ -426,7 +442,47 @@ namespace StationManager
             saveFileButton.Visibility = Visibility.Collapsed;
         }
 
-        
+
+        private void OnImportClick(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Выберите файл базы данных";
+            openFileDialog.Filter = "Data base file (*.db) | *.db";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                var additionalWindow = new MainWindow(true, openFileDialog.FileName, sqlData);
+                additionalWindow.ShowDialog();
+                sqlData.connection.Open();
+                UpdateMainDataGrid();
+            }
+        }
+
+        private void OnImportSelectedClick(object sender, RoutedEventArgs e)
+        {
+            if (DBGrid.SelectedItems.Count > 0)
+            {
+
+                additionalDB.ImportStations(originDB, DBGrid.SelectedItems);
+
+                if (!additionalDB.IsConnected)
+                    additionalDB.connection.Open();
+            }
+        }
+
+        private void OnSelectUnlikeClick(object sender, RoutedEventArgs e) {
+            if (!originDB.IsConnected)
+                originDB.connection.Open();
+
+            var unlikeStations = originDB.FindUnlikeStations(DBGrid.ItemsSource);
+            DBGrid.SelectedItems.Clear();
+            foreach (var station in unlikeStations)
+            {
+                DBGrid.SelectedItems.Add(station);
+            }
+
+            if (!additionalDB.IsConnected)
+                additionalDB.connection.Open();
+        }
     }
 
 }

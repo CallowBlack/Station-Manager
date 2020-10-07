@@ -187,40 +187,21 @@
             </ScrollViewer>
             
             <DockPanel Margin="3,3,5,3" Grid.Column="1">
-                <DockPanel DockPanel.Dock = "Bottom" LastChildFill="False" Margin="0,10,0,0" Style="{StaticResource IsNotAdditional}">
+                <DockPanel DockPanel.Dock = "Bottom" LastChildFill="False" Margin="0,10,0,0" x:Name="BottomButtons">
                     <Button FontSize="14" DockPanel.Dock = "Left"  Content="Обновить" Margin="5,0,0,0" Padding="3" Click="OnSearchClick"/>
-                    <Button FontSize="14" DockPanel.Dock = "Left"  Content="Импортировать БД" Margin="5,0,0,0" Padding="3" Click="OnSearchClick"/>
+                    <Button FontSize="14" DockPanel.Dock = "Left"  Content="Импортировать БД" Margin="5,0,0,0" Padding="3" Click="OnImportClick"/>
                     <Button FontSize="14" DockPanel.Dock = "Left"  Content="Редактировать столбцы" Margin="5,0,0,0" Padding="3" Click="OnEditColumnsClick"/>
                     <Button FontSize="14" DockPanel.Dock = "Right" Content="[O] Открыть" Margin="5,0,0,0" Padding="3" Click="OnEditClick"/>
                     <Button FontSize="14" DockPanel.Dock = "Right" Content="[+] Добавить" Margin="5,0,0,0" Padding="3" Click="OnAddClick"/>
                 </DockPanel>
 
-                <DockPanel Visibility="Collapsed" DockPanel.Dock="Bottom" LastChildFill="False" Margin="0,10,0,0">
-                    <Button FontSize="14" DockPanel.Dock = "Left" VerticalAlignment="Center" Content="Перенести записи" Margin="5,0,0,0" Padding="3" Click="OnSearchClick"/>
+                <DockPanel Visibility="Collapsed" DockPanel.Dock="Bottom" LastChildFill="False" Margin="0,10,0,0" x:Name="CopyButtons">
+                    <Button FontSize="12" DockPanel.Dock = "Left" VerticalAlignment="Center" Content="Импортировать выделенные" Margin="5,0,0,0" Padding="3" Click="OnImportSelectedClick"/>
                     <StackPanel DockPanel.Dock="Right" Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal">
-                            <CheckBox Content="Название"/>
-                            <CheckBox Content="Принадлежность" Margin="10,0,0,0"/>
-                            <CheckBox Content="Тип" Margin="10,0,0,0"/>
-                            <CheckBox Content="Назначение" Margin="10,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <CheckBox Content="Диапазон"/>
-                            <CheckBox Content="fн" Margin="10,0,0,0"/>
-                            <CheckBox Content="Tᵢ" Margin="10,0,0,0"/>
-                            <CheckBox Content="fᵢ" Margin="10,0,0,0"/>
-                            <CheckBox Content="Tₒ" Margin="10,0,0,0"/>
-                            <CheckBox Content="Примечание" Margin="10,0,0,0"/>
-                        </StackPanel>
-                        <DockPanel LastChildFill="False" Margin="0,5,0,0">
-                            <Button Content="Выделить" DockPanel.Dock="Left" Padding="5"/>
-                            <ComboBox Text="Совпадение:" DockPanel.Dock="Right" SelectedIndex="0" VerticalContentAlignment="Center">
-                                <ComboBoxItem Content="Всех"/>
-                                <ComboBoxItem Content="Любого"/>
-                            </ComboBox>
-                        </DockPanel>
+                        <Button FontSize="12" Content="Выделить не совпадающие" DockPanel.Dock="Right" Padding="5" Click="OnSelectUnlikeClick"/>
+                        <TextBlock FontSize="10">*Сравнение идёт по названию и примечанию</TextBlock>
                     </StackPanel>
-                    <TextBlock FontSize="14" VerticalAlignment="Center" DockPanel.Dock="Right" Margin="0,0,5,0">Совпадающие по:</TextBlock>
+                    
                 </DockPanel>
 
                 <DataGrid x:Name="DBGrid" AutoGenerateColumns="False" ItemsSource="{Binding Path=LoadDataBinding}" 
